@@ -1,0 +1,1 @@
+console.log('Toko UMKM App - Modern 2026');

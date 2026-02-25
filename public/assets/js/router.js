@@ -1,0 +1,83 @@
+const routes = {
+  '/': 'home',
+  '/products': 'products',
+  '/product/:id': 'productDetail',
+  '/cart': 'cart',
+  '/checkout': 'checkout',
+  '/track': 'trackOrder',
+  '/login': 'login',
+  '/admin': 'adminDashboard',
+  '/admin/products': 'adminProducts',
+  '/admin/categories': 'adminCategories',
+  '/admin/orders': 'adminOrders',
+  '/admin/customers': 'adminCustomers',
+  '/admin/users': 'adminUsers',
+  '/admin/settings': 'adminSettings',
+};
+
+function render(path) {
+  const app = document.getElementById('app');
+  let pageName = routes[path];
+  if (!pageName) {
+    for (const route in routes) {
+      if (route.includes(':id')) {
+        const baseRoute = route.split('/:')[0];
+        if (path.startsWith(baseRoute)) {
+          pageName = routes[route];
+          break;
+        }
+      }
+    }
+  }
+  pageName = pageName || 'notFound';
+  const funcName = `render${pageName.charAt(0).toUpperCase() + pageName.slice(1)}`;
+  if (typeof window[funcName] === 'function') {
+    window[funcName](path);
+  } else {
+    app.innerHTML = '<h1>404 Halaman tidak ditemukan</h1>';
+  }
+}
+
+window.addEventListener('hashchange', () => {
+  const hash = window.location.hash.slice(1) || '/';
+  render(hash);
+  updateCartCount();
+});
+
+window.addEventListener('load', () => {
+  const hash = window.location.hash.slice(1) || '/';
+  render(hash);
+  updateNavbar();
+  updateCartCount();
+});
+
+function updateNavbar() {
+  const token = localStorage.getItem('token');
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const navLogin = document.getElementById('navLogin');
+  const navUser = document.getElementById('navUser');
+  if (token && user) {
+    navLogin.classList.add('d-none');
+    navUser.classList.remove('d-none');
+  } else {
+    navLogin.classList.remove('d-none');
+    navUser.classList.add('d-none');
+  }
+}
+
+function updateCartCount() {
+  const cart = getCart();
+  const count = cart.reduce((acc, item) => acc + item.quantity, 0);
+  const cartCount = document.getElementById('cartCount');
+  if (cartCount) {
+    cartCount.textContent = count;
+  }
+}
+
+document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  updateNavbar();
+  window.location.hash = '#/';
+});
