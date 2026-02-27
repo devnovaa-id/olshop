@@ -21,25 +21,25 @@ window.renderAdminSettings = function() {
       <div class="col-md-9 admin-content">
         <h2 class="mb-4">Pengaturan Toko</h2>
         <form id="settingsForm" class="card p-4">
-          <div class="mb-3">
-            <label class="form-label">Nama Toko</label>
-            <input type="text" class="form-control" id="store_name" required>
+          <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="store_name" placeholder="Nama Toko" required>
+            <label for="store_name">Nama Toko</label>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Alamat Toko</label>
-            <textarea class="form-control" id="store_address" rows="2"></textarea>
+          <div class="form-floating mb-3">
+            <textarea class="form-control" id="store_address" placeholder="Alamat Toko" style="height: 100px"></textarea>
+            <label for="store_address">Alamat Toko</label>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Nomor Telepon</label>
-            <input type="text" class="form-control" id="store_phone">
+          <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="store_phone" placeholder="Nomor Telepon">
+            <label for="store_phone">Nomor Telepon</label>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Rekening Bank (untuk transfer)</label>
-            <input type="text" class="form-control" id="bank_account" placeholder="Contoh: BCA 123456789 a.n. Toko">
+          <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="bank_account" placeholder="Rekening Bank (untuk transfer)">
+            <label for="bank_account">Rekening Bank (untuk transfer)</label>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Ongkos Kirim (flat)</label>
-            <input type="number" class="form-control" id="shipping_cost" min="0" value="0">
+          <div class="form-floating mb-3">
+            <input type="number" class="form-control" id="shipping_cost" min="0" value="0" placeholder="Ongkos Kirim (flat)">
+            <label for="shipping_cost">Ongkos Kirim (flat)</label>
           </div>
           <button type="submit" class="btn btn-primary">Simpan</button>
         </form>
@@ -47,7 +47,7 @@ window.renderAdminSettings = function() {
     </div>
   `;
 
-  fetch('/.netlify/functions/admin/settings', {
+  fetch('/api/admin/settings', {
     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
   })
     .then(res => res.json())
@@ -58,7 +58,7 @@ window.renderAdminSettings = function() {
       document.getElementById('bank_account').value = settings.bank_account || '';
       document.getElementById('shipping_cost').value = settings.shipping_cost || 0;
     })
-    .catch(err => console.log(err));
+    .catch(err => showToast('Error', 'Gagal memuat pengaturan', 'error'));
 
   document.getElementById('settingsForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -71,7 +71,7 @@ window.renderAdminSettings = function() {
     };
 
     try {
-      const res = await fetch('/.netlify/functions/admin/settings', {
+      const res = await fetch('/api/admin/settings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -80,12 +80,12 @@ window.renderAdminSettings = function() {
         body: JSON.stringify(settings)
       });
       if (res.ok) {
-        alert('Pengaturan disimpan');
+        showToast('Sukses', 'Pengaturan disimpan', 'success');
       } else {
-        alert('Gagal menyimpan');
+        showToast('Gagal', 'Gagal menyimpan', 'error');
       }
     } catch (err) {
-      alert('Kesalahan: ' + err.message);
+      showToast('Error', err.message, 'error');
     }
   });
 };

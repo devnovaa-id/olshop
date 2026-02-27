@@ -3,7 +3,14 @@ window.renderCart = function() {
   const cart = getCart();
 
   if (cart.length === 0) {
-    app.innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>Keranjang belanja kosong. <a href="#/products">Belanja sekarang</a></div>';
+    app.innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-shopping-cart"></i>
+        <h3>Keranjang Belanja Kosong</h3>
+        <p>Yuk, belanja produk-produk menarik kami!</p>
+        <a href="#/products" class="btn btn-primary">Lihat Produk</a>
+      </div>
+    `;
     return;
   }
 
@@ -74,5 +81,6 @@ window.renderCart = function() {
   document.getElementById('clearCartBtn').addEventListener('click', () => {
     localStorage.removeItem('cart');
     renderCart();
+    showToast('Info', 'Keranjang dikosongkan', 'info');
   });
 };

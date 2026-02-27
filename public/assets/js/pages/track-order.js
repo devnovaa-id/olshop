@@ -8,9 +8,9 @@ window.renderTrackOrder = function() {
     <div class="row justify-content-center">
       <div class="col-md-6">
         <form id="trackForm" class="card p-4 shadow">
-          <div class="mb-3">
-            <label class="form-label">Masukkan Nomor Pesanan</label>
-            <input type="text" class="form-control" id="orderNumber" value="${orderNumber}" required>
+          <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="orderNumber" value="${orderNumber}" placeholder="Nomor Pesanan" required>
+            <label for="orderNumber">Masukkan Nomor Pesanan</label>
           </div>
           <button type="submit" class="btn btn-primary">Lacak</button>
         </form>
@@ -33,7 +33,7 @@ window.renderTrackOrder = function() {
   function loadOrder(number) {
     const resultDiv = document.getElementById('trackResult');
     resultDiv.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Mencari...</div>';
-    fetch(`/.netlify/functions/public/track-order?orderNumber=${encodeURIComponent(number)}`)
+    fetch(`/api/public/track-order?orderNumber=${encodeURIComponent(number)}`)
       .then(res => {
         if (!res.ok) throw new Error('Pesanan tidak ditemukan');
         return res.json();
@@ -68,6 +68,7 @@ window.renderTrackOrder = function() {
       })
       .catch(err => {
         resultDiv.innerHTML = '<div class="alert alert-danger">Pesanan tidak ditemukan</div>';
+        showToast('Error', 'Pesanan tidak ditemukan', 'error');
       });
   }
 };

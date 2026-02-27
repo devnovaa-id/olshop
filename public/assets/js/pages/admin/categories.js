@@ -27,7 +27,6 @@ window.renderAdminCategories = function() {
       </div>
     </div>
 
-    <!-- Modal -->
     <div class="modal fade" id="categoryModal" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -38,13 +37,13 @@ window.renderAdminCategories = function() {
           <div class="modal-body">
             <form id="categoryForm">
               <input type="hidden" id="categoryId">
-              <div class="mb-3">
-                <label class="form-label">Nama Kategori</label>
-                <input type="text" class="form-control" id="catName" required>
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="catName" placeholder="Nama Kategori" required>
+                <label for="catName">Nama Kategori</label>
               </div>
-              <div class="mb-3">
-                <label class="form-label">Deskripsi</label>
-                <textarea class="form-control" id="catDescription" rows="3"></textarea>
+              <div class="form-floating mb-3">
+                <textarea class="form-control" id="catDescription" placeholder="Deskripsi" style="height: 100px"></textarea>
+                <label for="catDescription">Deskripsi</label>
               </div>
             </form>
           </div>
@@ -58,14 +57,14 @@ window.renderAdminCategories = function() {
   `;
 
   function loadCategories() {
-    fetch('/.netlify/functions/admin/categories-list', {
+    fetch('/api/admin/categories-list', {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     })
       .then(res => res.json())
       .then(categories => {
         const container = document.getElementById('categoriesTable');
         container.innerHTML = `
-          <table class="table table-striped">
+          <table class="table table-modern">
             <thead>
               <tr>
                 <th>ID</th>
@@ -90,7 +89,8 @@ window.renderAdminCategories = function() {
           </table>
         `;
         attachEvents();
-      });
+      })
+      .catch(err => showToast('Error', 'Gagal memuat kategori', 'error'));
   }
 
   function attachEvents() {
@@ -117,10 +117,10 @@ window.renderAdminCategories = function() {
 
     let url, method;
     if (id) {
-      url = '/.netlify/functions/admin/categories-update';
+      url = '/api/admin/categories-update';
       method = 'PUT';
     } else {
-      url = '/.netlify/functions/admin/categories-create';
+      url = '/api/admin/categories-create';
       method = 'POST';
     }
 
@@ -136,16 +136,17 @@ window.renderAdminCategories = function() {
       if (res.ok) {
         bootstrap.Modal.getInstance(document.getElementById('categoryModal')).hide();
         loadCategories();
+        showToast('Sukses', 'Kategori disimpan', 'success');
       } else {
-        alert('Gagal');
+        showToast('Gagal', 'Gagal menyimpan', 'error');
       }
     } catch (err) {
-      alert('Kesalahan: ' + err.message);
+      showToast('Error', err.message, 'error');
     }
   });
 
   async function editCategory(id) {
-    const res = await fetch('/.netlify/functions/admin/categories-list', {
+    const res = await fetch('/api/admin/categories-list', {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
     const categories = await res.json();
@@ -162,14 +163,18 @@ window.renderAdminCategories = function() {
   async function deleteCategory(id) {
     if (!confirm('Yakin?')) return;
     try {
-      const res = await fetch(`/.netlify/functions/admin/categories-delete?id=${id}`, {
+      const res = await fetch(`/api/admin/categories-delete?id=${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      if (res.ok) loadCategories();
-      else alert('Gagal');
+      if (res.ok) {
+        loadCategories();
+        showToast('Sukses', 'Kategori dihapus', 'success');
+      } else {
+        showToast('Gagal', 'Gagal menghapus', 'error');
+      }
     } catch (err) {
-      alert('Kesalahan: ' + err.message);
+      showToast('Error', err.message, 'error');
     }
   }
 };

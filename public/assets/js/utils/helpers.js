@@ -1,12 +1,11 @@
 window.formatRupiah = (angka) => {
+  if (angka === undefined || angka === null || isNaN(angka)) return 'Rp 0';
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
 };
 
 window.showLoading = (containerId) => {
   document.getElementById(containerId).innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Memuat...</div>';
 };
-
-window.hideLoading = () => {};
 
 window.getCart = () => {
   return JSON.parse(localStorage.getItem('cart')) || [];
@@ -26,7 +25,7 @@ window.addToCart = (product, quantity = 1) => {
     cart.push({ ...product, quantity });
   }
   saveCart(cart);
-  alert('Produk ditambahkan ke keranjang');
+  showToast('Berhasil', 'Produk ditambahkan ke keranjang', 'success');
 };
 
 window.removeFromCart = (productId) => {

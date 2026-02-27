@@ -3,7 +3,7 @@ window.renderProductDetail = function(path) {
   const app = document.getElementById('app');
   app.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Memuat...</div>`;
 
-  fetch(`/.netlify/functions/public/product-detail?slug=${slug}`)
+  fetch(`/api/public/product-detail?slug=${slug}`)
     .then(res => res.json())
     .then(product => {
       app.innerHTML = `
@@ -17,9 +17,9 @@ window.renderProductDetail = function(path) {
             <h3 class="text-primary">${formatRupiah(product.price)}</h3>
             <p>Stok: ${product.stock}</p>
             <p>${product.description || 'Tidak ada deskripsi.'}</p>
-            <div class="mb-3">
-              <label for="quantity" class="form-label">Jumlah</label>
-              <input type="number" class="form-control" id="quantity" value="1" min="1" max="${product.stock}">
+            <div class="form-floating mb-3">
+              <input type="number" class="form-control" id="quantity" value="1" min="1" max="${product.stock}" placeholder="Jumlah">
+              <label for="quantity">Jumlah</label>
             </div>
             <button class="btn btn-primary btn-lg" id="addToCartBtn" ${product.stock === 0 ? 'disabled' : ''}><i class="fas fa-cart-plus me-2"></i>Tambah ke Keranjang</button>
           </div>
@@ -29,7 +29,7 @@ window.renderProductDetail = function(path) {
       document.getElementById('addToCartBtn').addEventListener('click', () => {
         const qty = parseInt(document.getElementById('quantity').value);
         if (qty > product.stock) {
-          alert('Jumlah melebihi stok');
+          showToast('Gagal', 'Jumlah melebihi stok', 'error');
           return;
         }
         addToCart({
@@ -44,5 +44,6 @@ window.renderProductDetail = function(path) {
     })
     .catch(err => {
       app.innerHTML = '<div class="alert alert-danger">Produk tidak ditemukan</div>';
+      showToast('Error', 'Produk tidak ditemukan', 'error');
     });
 };

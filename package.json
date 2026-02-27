@@ -1,17 +1,19 @@
 {
   "name": "toko-online-umkm",
-  "version": "1.0.0",
-  "description": "Toko Online UMKM dengan SPA + Netlify Functions + Supabase",
-  "main": "index.js",
+  "version": "2.0.0",
+  "description": "Toko Online UMKM - Multiplatform (Vercel, Cloudflare, Node.js)",
+  "main": "server.js",
   "scripts": {
-    "dev": "netlify dev",
-    "generate-readme": "node readme.js"
+    "dev": "node server.js",
+    "start": "node server.js",
+    "vercel-build": "echo 'No build required'"
   },
   "dependencies": {
     "@sendgrid/mail": "^8.1.6",
     "@supabase/supabase-js": "^2.38.4",
     "bcryptjs": "^2.4.3",
     "dotenv": "^17.3.1",
+    "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2"
   }
 }

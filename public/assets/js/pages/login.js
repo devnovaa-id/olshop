@@ -7,13 +7,13 @@ window.renderLogin = function() {
           <div class="card-body p-5">
             <h2 class="card-title text-center mb-4"><i class="fas fa-lock me-2"></i>Login Admin</h2>
             <form id="loginForm">
-              <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" required>
+              <div class="form-floating mb-3">
+                <input type="email" class="form-control" id="email" placeholder="Email" required>
+                <label for="email">Email</label>
               </div>
-              <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" required>
+              <div class="form-floating mb-3">
+                <input type="password" class="form-control" id="password" placeholder="Password" required>
+                <label for="password">Password</label>
               </div>
               <button type="submit" class="btn btn-primary w-100">Login</button>
             </form>
@@ -31,7 +31,7 @@ window.renderLogin = function() {
     const msgDiv = document.getElementById('loginMessage');
 
     try {
-      const res = await fetch('/.netlify/functions/auth-login', {
+      const res = await fetch('/api/auth-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -41,15 +41,18 @@ window.renderLogin = function() {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         msgDiv.innerHTML = `<div class="alert alert-success">Login berhasil! Mengalihkan...</div>`;
+        showToast('Sukses', 'Login berhasil', 'success');
         updateNavbar();
         setTimeout(() => {
           window.location.hash = '#/admin';
         }, 1000);
       } else {
         msgDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+        showToast('Gagal', data.message, 'error');
       }
     } catch (err) {
       msgDiv.innerHTML = `<div class="alert alert-danger">Terjadi kesalahan: ${err.message}</div>`;
+      showToast('Error', err.message, 'error');
     }
   });
 };

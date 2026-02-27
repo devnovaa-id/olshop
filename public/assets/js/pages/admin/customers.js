@@ -32,14 +32,14 @@ window.renderAdminCustomers = function() {
   let totalPages = 1;
 
   function loadCustomers() {
-    fetch(`/.netlify/functions/admin/customers-list?page=${currentPage}&limit=10`, {
+    fetch(`/api/admin/customers-list?page=${currentPage}&limit=10`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     })
       .then(res => res.json())
       .then(data => {
         const container = document.getElementById('customersTable');
         container.innerHTML = `
-          <table class="table table-striped">
+          <table class="table table-modern">
             <thead>
               <tr>
                 <th>ID</th>
@@ -66,7 +66,8 @@ window.renderAdminCustomers = function() {
         `;
         totalPages = Math.ceil(data.total / data.limit);
         renderPagination();
-      });
+      })
+      .catch(err => showToast('Error', 'Gagal memuat pelanggan', 'error'));
   }
 
   function renderPagination() {

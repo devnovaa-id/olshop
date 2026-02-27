@@ -49,7 +49,6 @@ window.renderAdminOrders = function() {
       </div>
     </div>
 
-    <!-- Modal Detail -->
     <div class="modal fade" id="orderModal" tabindex="-1">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -74,7 +73,7 @@ window.renderAdminOrders = function() {
   let paymentFilter = '';
 
   function loadOrders() {
-    let url = `/.netlify/functions/admin/orders-list?page=${currentPage}&limit=10`;
+    let url = `/api/admin/orders-list?page=${currentPage}&limit=10`;
     if (statusFilter) url += `&status=${statusFilter}`;
     if (paymentFilter) url += `&payment_method=${paymentFilter}`;
     fetch(url, {
@@ -84,7 +83,7 @@ window.renderAdminOrders = function() {
       .then(data => {
         const container = document.getElementById('ordersTable');
         container.innerHTML = `
-          <table class="table table-striped">
+          <table class="table table-modern">
             <thead>
               <tr>
                 <th>No. Pesanan</th>
@@ -116,7 +115,8 @@ window.renderAdminOrders = function() {
         totalPages = Math.ceil(data.total / data.limit);
         renderPagination();
         attachEvents();
-      });
+      })
+      .catch(err => showToast('Error', 'Gagal memuat pesanan', 'error'));
   }
 
   function renderPagination() {
@@ -154,7 +154,7 @@ window.renderAdminOrders = function() {
     const modalBody = document.getElementById('orderDetailBody');
     modalBody.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Memuat...</div>';
     try {
-      const res = await fetch(`/.netlify/functions/admin/orders-detail?id=${id}`, {
+      const res = await fetch(`/api/admin/orders-detail?id=${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       const order = await res.json();
@@ -209,7 +209,7 @@ window.renderAdminOrders = function() {
         const newStatus = document.getElementById('updateStatus').value;
         const tracking = document.getElementById('trackingNumber').value;
         try {
-          const res = await fetch('/.netlify/functions/admin/orders-update-status', {
+          const res = await fetch('/api/admin/orders-update-status', {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -218,20 +218,21 @@ window.renderAdminOrders = function() {
             body: JSON.stringify({ id: order.id, status: newStatus, tracking_number: tracking })
           });
           if (res.ok) {
-            alert('Status diperbarui');
+            showToast('Sukses', 'Status diperbarui', 'success');
             bootstrap.Modal.getInstance(document.getElementById('orderModal')).hide();
             loadOrders();
           } else {
-            alert('Gagal');
+            showToast('Gagal', 'Gagal update', 'error');
           }
         } catch (err) {
-          alert('Kesalahan: ' + err.message);
+          showToast('Error', err.message, 'error');
         }
       });
 
       new bootstrap.Modal(document.getElementById('orderModal')).show();
     } catch (err) {
       modalBody.innerHTML = 'Gagal memuat detail.';
+      showToast('Error', err.message, 'error');
     }
   }
 };

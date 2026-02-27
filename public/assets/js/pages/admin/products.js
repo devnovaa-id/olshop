@@ -30,7 +30,6 @@ window.renderAdminProducts = function() {
       </div>
     </div>
 
-    <!-- Modal -->
     <div class="modal fade" id="productModal" tabindex="-1">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -41,31 +40,32 @@ window.renderAdminProducts = function() {
           <div class="modal-body">
             <form id="productForm">
               <input type="hidden" id="productId">
-              <div class="mb-3">
-                <label class="form-label">Nama Produk</label>
-                <input type="text" class="form-control" id="name" required>
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="name" placeholder="Nama Produk" required>
+                <label for="name">Nama Produk</label>
               </div>
-              <div class="mb-3">
-                <label class="form-label">Slug</label>
-                <input type="text" class="form-control" id="slug" required>
-                <small class="text-muted">URL friendly, contoh: produk-123</small>
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="slug" placeholder="Slug" required>
+                <label for="slug">Slug (URL friendly)</label>
               </div>
-              <div class="mb-3">
-                <label class="form-label">Kategori</label>
-                <select class="form-control" id="category_id" required></select>
+              <div class="form-floating mb-3">
+                <select class="form-control" id="category_id" required>
+                  <option value="">Pilih Kategori</option>
+                </select>
+                <label for="category_id">Kategori</label>
               </div>
-              <div class="mb-3">
-                <label class="form-label">Deskripsi</label>
-                <textarea class="form-control" id="description" rows="3"></textarea>
+              <div class="form-floating mb-3">
+                <textarea class="form-control" id="description" placeholder="Deskripsi" style="height: 100px"></textarea>
+                <label for="description">Deskripsi</label>
               </div>
               <div class="row">
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Harga</label>
-                  <input type="number" class="form-control" id="price" min="0" required>
+                <div class="col-md-6 form-floating mb-3">
+                  <input type="number" class="form-control" id="price" placeholder="Harga" min="0" required>
+                  <label for="price">Harga</label>
                 </div>
-                <div class="col-md-6 mb-3">
-                  <label class="form-label">Stok</label>
-                  <input type="number" class="form-control" id="stock" min="0" required>
+                <div class="col-md-6 form-floating mb-3">
+                  <input type="number" class="form-control" id="stock" placeholder="Stok" min="0" required>
+                  <label for="stock">Stok</label>
                 </div>
               </div>
               <div class="mb-3">
@@ -89,14 +89,14 @@ window.renderAdminProducts = function() {
   let totalPages = 1;
 
   function loadProducts() {
-    fetch(`/.netlify/functions/admin/products-list?page=${currentPage}&limit=10`, {
+    fetch(`/api/admin/products-list?page=${currentPage}&limit=10`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     })
       .then(res => res.json())
       .then(data => {
         const container = document.getElementById('productsTable');
         container.innerHTML = `
-          <table class="table table-striped">
+          <table class="table table-modern">
             <thead>
               <tr>
                 <th>ID</th>
@@ -129,7 +129,8 @@ window.renderAdminProducts = function() {
         totalPages = Math.ceil(data.total / data.limit);
         renderPagination();
         attachEvents();
-      });
+      })
+      .catch(err => showToast('Error', 'Gagal memuat produk', 'error'));
   }
 
   function renderPagination() {
@@ -158,7 +159,7 @@ window.renderAdminProducts = function() {
   }
 
   function loadCategories() {
-    fetch('/.netlify/functions/admin/categories-list', {
+    fetch('/api/admin/categories-list', {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     })
       .then(res => res.json())
@@ -194,10 +195,10 @@ window.renderAdminProducts = function() {
     let imageUrl = '';
     if (imageFile) {
       try {
-        const { uploadImage } = await import('../utils/supabase.js');
+        const { uploadImage } = await import('/assets/js/utils/supabase.js');
         imageUrl = await uploadImage(imageFile, 'product-images', 'products');
       } catch (err) {
-        alert('Gagal upload gambar: ' + err.message);
+        showToast('Gagal', 'Upload gambar gagal: ' + err.message, 'error');
         return;
       }
     }
@@ -207,11 +208,11 @@ window.renderAdminProducts = function() {
 
     let url, method;
     if (id) {
-      url = '/.netlify/functions/admin/products-update';
+      url = '/api/admin/products-update';
       method = 'PUT';
       productData.id = id;
     } else {
-      url = '/.netlify/functions/admin/products-create';
+      url = '/api/admin/products-create';
       method = 'POST';
     }
 
@@ -227,17 +228,18 @@ window.renderAdminProducts = function() {
       if (res.ok) {
         bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
         loadProducts();
+        showToast('Sukses', 'Produk disimpan', 'success');
       } else {
         const err = await res.json();
-        alert('Gagal: ' + err.message);
+        showToast('Gagal', err.message, 'error');
       }
     } catch (err) {
-      alert('Terjadi kesalahan: ' + err.message);
+      showToast('Error', err.message, 'error');
     }
   });
 
   async function editProduct(id) {
-    const res = await fetch(`/.netlify/functions/admin/products-list?page=1&limit=1`, {
+    const res = await fetch(`/api/admin/products-list?page=1&limit=1`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
     const data = await res.json();
@@ -260,17 +262,18 @@ window.renderAdminProducts = function() {
   async function deleteProduct(id) {
     if (!confirm('Yakin ingin menghapus produk ini?')) return;
     try {
-      const res = await fetch(`/.netlify/functions/admin/products-delete?id=${id}`, {
+      const res = await fetch(`/api/admin/products-delete?id=${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       if (res.ok) {
         loadProducts();
+        showToast('Sukses', 'Produk dihapus', 'success');
       } else {
-        alert('Gagal menghapus');
+        showToast('Gagal', 'Gagal menghapus', 'error');
       }
     } catch (err) {
-      alert('Kesalahan: ' + err.message);
+      showToast('Error', err.message, 'error');
     }
   }
 };

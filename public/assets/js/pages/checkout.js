@@ -9,7 +9,7 @@ window.renderCheckout = function() {
   let subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   let shippingCost = 0;
 
-  fetch('/.netlify/functions/admin/settings')
+  fetch('/api/admin/settings')
     .then(res => res.json())
     .then(settings => {
       shippingCost = parseInt(settings.shipping_cost) || 0;
@@ -26,22 +26,21 @@ window.renderCheckout = function() {
         <div class="col-md-8">
           <form id="checkoutForm" class="card p-4 shadow">
             <h4>Data Pengiriman</h4>
-            <div class="mb-3">
-              <label class="form-label">Nama Lengkap</label>
-              <input type="text" class="form-control" id="name" required>
+            <div class="form-floating mb-3">
+              <input type="text" class="form-control" id="name" placeholder="Nama Lengkap" required>
+              <label for="name">Nama Lengkap</label>
             </div>
-            <div class="mb-3">
-              <label class="form-label">Email</label>
-              <input type="email" class="form-control" id="email">
-              <small class="text-muted">Opsional, untuk notifikasi</small>
+            <div class="form-floating mb-3">
+              <input type="email" class="form-control" id="email" placeholder="Email">
+              <label for="email">Email (opsional)</label>
             </div>
-            <div class="mb-3">
-              <label class="form-label">Nomor Telepon</label>
-              <input type="text" class="form-control" id="phone" required>
+            <div class="form-floating mb-3">
+              <input type="text" class="form-control" id="phone" placeholder="Nomor Telepon" required>
+              <label for="phone">Nomor Telepon</label>
             </div>
-            <div class="mb-3">
-              <label class="form-label">Alamat Pengiriman</label>
-              <textarea class="form-control" id="address" rows="3" required></textarea>
+            <div class="form-floating mb-3">
+              <textarea class="form-control" id="address" placeholder="Alamat Pengiriman" style="height: 100px" required></textarea>
+              <label for="address">Alamat Pengiriman</label>
             </div>
 
             <h4>Metode Pembayaran</h4>
@@ -123,14 +122,14 @@ window.renderCheckout = function() {
       if (paymentMethod === 'transfer') {
         const fileInput = document.getElementById('paymentProof');
         if (!fileInput.files[0]) {
-          alert('Harap upload bukti transfer');
+          showToast('Gagal', 'Harap upload bukti transfer', 'error');
           return;
         }
         try {
-          const { uploadImage } = await import('../utils/supabase.js');
+          const { uploadImage } = await import('/assets/js/utils/supabase.js');
           paymentProof = await uploadImage(fileInput.files[0], 'payment-proofs', 'proofs');
         } catch (err) {
-          alert('Gagal upload bukti: ' + err.message);
+          showToast('Gagal', 'Upload bukti gagal: ' + err.message, 'error');
           return;
         }
       }
@@ -153,7 +152,7 @@ window.renderCheckout = function() {
       };
 
       try {
-        const res = await fetch('/.netlify/functions/public/checkout', {
+        const res = await fetch('/api/public/checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -161,12 +160,13 @@ window.renderCheckout = function() {
         const data = await res.json();
         if (res.ok) {
           localStorage.removeItem('cart');
+          showToast('Sukses', 'Pesanan berhasil dibuat', 'success');
           window.location.hash = `#/track?order=${data.orderNumber}`;
         } else {
-          alert('Gagal: ' + data.message);
+          showToast('Gagal', data.message, 'error');
         }
       } catch (err) {
-        alert('Terjadi kesalahan: ' + err.message);
+        showToast('Error', 'Terjadi kesalahan: ' + err.message, 'error');
       }
     });
   }

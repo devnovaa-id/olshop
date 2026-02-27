@@ -39,16 +39,20 @@ function render(path) {
 }
 
 window.addEventListener('hashchange', () => {
-  const hash = window.location.hash.slice(1) || '/';
-  render(hash);
+  const fullHash = window.location.hash.slice(1) || '/';
+  const path = fullHash.split('?')[0];
+  render(path);
   updateCartCount();
+  updateBottomNav(path);
 });
 
 window.addEventListener('load', () => {
-  const hash = window.location.hash.slice(1) || '/';
-  render(hash);
+  const fullHash = window.location.hash.slice(1) || '/';
+  const path = fullHash.split('?')[0];
+  render(path);
   updateNavbar();
   updateCartCount();
+  updateBottomNav(path);
 });
 
 function updateNavbar() {
@@ -69,8 +73,11 @@ function updateCartCount() {
   const cart = getCart();
   const count = cart.reduce((acc, item) => acc + item.quantity, 0);
   const cartCount = document.getElementById('cartCount');
-  if (cartCount) {
-    cartCount.textContent = count;
+  if (cartCount) cartCount.textContent = count;
+  const mobileBadge = document.getElementById('mobileCartCount');
+  if (mobileBadge) {
+    mobileBadge.textContent = count;
+    mobileBadge.style.display = count > 0 ? 'inline-block' : 'none';
   }
 }
 

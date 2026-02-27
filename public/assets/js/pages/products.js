@@ -23,7 +23,7 @@ window.renderProducts = function() {
       </div>
       <div class="col-md-9">
         <div id="productsContainer" class="row row-cols-1 row-cols-md-3 g-4">
-          <div class="col-12 text-center">Memuat...</div>
+          ${renderSkeletonProducts(6)}
         </div>
         <nav aria-label="Page navigation" class="mt-4">
           <ul class="pagination justify-content-center" id="pagination"></ul>
@@ -37,7 +37,7 @@ window.renderProducts = function() {
   let currentCategory = '';
   let currentSearch = '';
 
-  fetch('/.netlify/functions/admin/categories-list', {
+  fetch('/api/admin/categories-list', {
     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
   })
     .then(res => res.json())
@@ -50,7 +50,7 @@ window.renderProducts = function() {
     .catch(err => console.log('Gagal ambil kategori (mungkin tidak login)'));
 
   function loadProducts() {
-    let url = `/.netlify/functions/public/products-list?page=${currentPage}&limit=12`;
+    let url = `/api/public/products-list?page=${currentPage}&limit=12`;
     if (currentCategory) url += `&category=${currentCategory}`;
     if (currentSearch) url += `&search=${encodeURIComponent(currentSearch)}`;
     fetch(url)
@@ -78,6 +78,7 @@ window.renderProducts = function() {
       })
       .catch(err => {
         document.getElementById('productsContainer').innerHTML = '<div class="col-12 text-center text-danger">Gagal memuat produk</div>';
+        showToast('Error', 'Gagal memuat produk', 'error');
       });
   }
 

@@ -11,11 +11,11 @@ window.renderHome = function() {
 
     <h2 class="mb-4">Produk Unggulan</h2>
     <div id="featuredProducts" class="row row-cols-1 row-cols-md-4 g-4">
-      <div class="col-12 text-center">Memuat...</div>
+      ${renderSkeletonProducts(4)}
     </div>
   `;
 
-  fetch('/.netlify/functions/public/products-list?limit=4')
+  fetch('/api/public/products-list?limit=4')
     .then(res => res.json())
     .then(data => {
       const container = document.getElementById('featuredProducts');
@@ -38,5 +38,6 @@ window.renderHome = function() {
     })
     .catch(err => {
       document.getElementById('featuredProducts').innerHTML = '<div class="col-12 text-center text-danger">Gagal memuat produk</div>';
+      showToast('Error', 'Gagal memuat produk', 'error');
     });
 };

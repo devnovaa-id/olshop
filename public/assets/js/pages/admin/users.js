@@ -28,7 +28,6 @@ window.renderAdminUsers = function() {
       </div>
     </div>
 
-    <!-- Modal -->
     <div class="modal fade" id="userModal" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -38,24 +37,24 @@ window.renderAdminUsers = function() {
           </div>
           <div class="modal-body">
             <form id="userForm">
-              <div class="mb-3">
-                <label class="form-label">Nama</label>
-                <input type="text" class="form-control" id="userName" required>
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="userName" placeholder="Nama" required>
+                <label for="userName">Nama</label>
               </div>
-              <div class="mb-3">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-control" id="userEmail" required>
+              <div class="form-floating mb-3">
+                <input type="email" class="form-control" id="userEmail" placeholder="Email" required>
+                <label for="userEmail">Email</label>
               </div>
-              <div class="mb-3">
-                <label class="form-label">Password</label>
-                <input type="password" class="form-control" id="userPassword" required>
+              <div class="form-floating mb-3">
+                <input type="password" class="form-control" id="userPassword" placeholder="Password" required>
+                <label for="userPassword">Password</label>
               </div>
-              <div class="mb-3">
-                <label class="form-label">Role</label>
+              <div class="form-floating mb-3">
                 <select class="form-control" id="userRole">
                   <option value="admin">Admin</option>
                   <option value="master">Master</option>
                 </select>
+                <label for="userRole">Role</label>
               </div>
             </form>
           </div>
@@ -69,14 +68,14 @@ window.renderAdminUsers = function() {
   `;
 
   function loadUsers() {
-    fetch('/.netlify/functions/admin/users-list', {
+    fetch('/api/admin/users-list', {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     })
       .then(res => res.json())
       .then(users => {
         const container = document.getElementById('usersTable');
         container.innerHTML = `
-          <table class="table table-striped">
+          <table class="table table-modern">
             <thead>
               <tr>
                 <th>ID</th>
@@ -102,7 +101,8 @@ window.renderAdminUsers = function() {
           </table>
         `;
         attachEvents();
-      });
+      })
+      .catch(err => showToast('Error', 'Gagal memuat user', 'error'));
   }
 
   function attachEvents() {
@@ -120,7 +120,7 @@ window.renderAdminUsers = function() {
     const role = document.getElementById('userRole').value;
 
     try {
-      const res = await fetch('/.netlify/functions/admin/users-create', {
+      const res = await fetch('/api/admin/users-create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -131,25 +131,30 @@ window.renderAdminUsers = function() {
       if (res.ok) {
         bootstrap.Modal.getInstance(document.getElementById('userModal')).hide();
         loadUsers();
+        showToast('Sukses', 'User ditambahkan', 'success');
       } else {
-        alert('Gagal');
+        showToast('Gagal', 'Gagal menambah user', 'error');
       }
     } catch (err) {
-      alert('Kesalahan: ' + err.message);
+      showToast('Error', err.message, 'error');
     }
   });
 
   async function deleteUser(id) {
     if (!confirm('Yakin ingin menghapus admin ini?')) return;
     try {
-      const res = await fetch(`/.netlify/functions/admin/users-delete?id=${id}`, {
+      const res = await fetch(`/api/admin/users-delete?id=${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      if (res.ok) loadUsers();
-      else alert('Gagal');
+      if (res.ok) {
+        loadUsers();
+        showToast('Sukses', 'User dihapus', 'success');
+      } else {
+        showToast('Gagal', 'Gagal menghapus', 'error');
+      }
     } catch (err) {
-      alert('Kesalahan: ' + err.message);
+      showToast('Error', err.message, 'error');
     }
   }
 };

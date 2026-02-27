@@ -82,7 +82,7 @@ window.renderAdminDashboard = function() {
     </div>
   `;
 
-  fetch('/.netlify/functions/admin/dashboard-stats', {
+  fetch('/api/admin/dashboard-stats', {
     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
   })
     .then(res => res.json())
@@ -91,7 +91,6 @@ window.renderAdminDashboard = function() {
       document.getElementById('totalRevenue').textContent = formatRupiah(stats.totalRevenue);
       document.getElementById('totalSold').textContent = stats.totalSold;
 
-      // Chart Status
       const ctxStatus = document.getElementById('statusChart').getContext('2d');
       new Chart(ctxStatus, {
         type: 'doughnut',
@@ -117,7 +116,6 @@ window.renderAdminDashboard = function() {
         }
       });
 
-      // Chart Harian
       const ctxDaily = document.getElementById('dailyChart').getContext('2d');
       const dates = Object.keys(stats.dailyData).sort();
       const counts = dates.map(date => stats.dailyData[date].count);
@@ -128,8 +126,8 @@ window.renderAdminDashboard = function() {
           datasets: [{
             label: 'Jumlah Pesanan',
             data: counts,
-            borderColor: '#4361ee',
-            backgroundColor: 'rgba(67, 97, 238, 0.1)',
+            borderColor: '#7c3aed',
+            backgroundColor: 'rgba(124, 58, 237, 0.1)',
             tension: 0.4,
             fill: true
           }]
@@ -142,5 +140,8 @@ window.renderAdminDashboard = function() {
         }
       });
     })
-    .catch(err => console.log(err));
+    .catch(err => {
+      console.log(err);
+      showToast('Error', 'Gagal memuat statistik', 'error');
+    });
 };
